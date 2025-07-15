@@ -1,4 +1,4 @@
-# res_vpn
+# vpn_max
 
 A new Flutter project.
 
