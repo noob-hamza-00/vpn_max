@@ -1890,4 +1890,4 @@ class _AppFilterScreenState extends State<AppFilterScreen>
         packageNameLower == 'com.google.android.apps.youtube.kids' ||
         packageNameLower.startsWith('com.google.android.youtube');
   }
-}
+ }

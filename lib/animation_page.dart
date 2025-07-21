@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:math';
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -19,7 +20,7 @@ class _AnimationPageState extends State<AnimationPage>
   bool connected = false;
   bool connecting = false;
   double connectingProgress = 0.0;
-  String? _toastMessage;
+  // Removed all floating toast logic, using only native mobile toast (Fluttertoast)
   late AnimationController _controller;
   int selectedTab = 0; // 0 = VPN, 1 = More
 
@@ -107,7 +108,7 @@ class _AnimationPageState extends State<AnimationPage>
         ),
         child: SafeArea(
           child: Container(
-            height: context.responsiveHeight(70),
+            height: context.responsiveHeight(60),
             padding: EdgeInsets.symmetric(
                 horizontal: context.responsiveSpacing(16),
                 vertical: context.responsiveSpacing(8)),
@@ -158,15 +159,15 @@ class _AnimationPageState extends State<AnimationPage>
       setState(() {
         connecting = false;
         connected = true;
-        _toastMessage = "Connected";
       });
-
-      await Future.delayed(const Duration(milliseconds: 1200));
-      if (mounted) {
-        setState(() {
-          _toastMessage = null;
-        });
-      }
+      Fluttertoast.showToast(
+        msg: "Connected",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.grey[800],
+        textColor: Colors.white,
+        fontSize: 15.0,
+      );
     } else if (connected) {
       _showDisconnectDialog();
     }
@@ -247,14 +248,15 @@ class _AnimationPageState extends State<AnimationPage>
     if (shouldDisconnect == true) {
       setState(() {
         connected = false;
-        _toastMessage = "Disconnected";
       });
-      await Future.delayed(const Duration(milliseconds: 800));
-      if (mounted) {
-        setState(() {
-          _toastMessage = null;
-        });
-      }
+      Fluttertoast.showToast(
+        msg: "Disconnected",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.grey[800],
+        textColor: Colors.white,
+        fontSize: 15.0,
+      );
     }
   }
 
@@ -309,7 +311,6 @@ class _AnimationPageState extends State<AnimationPage>
                     setState(() {
                       connected = false;
                       connecting = false;
-                      _toastMessage = null;
                     });
                   },
                   child: const Text(
@@ -561,16 +562,15 @@ class _AnimationPageState extends State<AnimationPage>
         // If not connected, just change server normally
         setState(() {
           selectedServer = picked;
-          _toastMessage = "Server changed to ${servers[picked]['country']}";
         });
-
-        // Show toast message
-        await Future.delayed(const Duration(milliseconds: 1500));
-        if (mounted) {
-          setState(() {
-            _toastMessage = null;
-          });
-        }
+        Fluttertoast.showToast(
+          msg: "Server changed to ${servers[picked]['country']}",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.grey[800],
+          textColor: Colors.white,
+          fontSize: 15.0,
+        );
       }
     }
   }
@@ -737,8 +737,15 @@ class _AnimationPageState extends State<AnimationPage>
         connected = false;
         connecting = false;
         connectingProgress = 0.0;
-        _toastMessage = "Disconnected from VPN";
       });
+      Fluttertoast.showToast(
+        msg: "Disconnected from VPN",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.grey[800],
+        textColor: Colors.white,
+        fontSize: 15.0,
+      );
 
       // Wait for disconnect message to show
       await Future.delayed(const Duration(milliseconds: 1000));
@@ -746,19 +753,15 @@ class _AnimationPageState extends State<AnimationPage>
       // Change server
       setState(() {
         selectedServer = newServerIndex;
-        _toastMessage =
-            "Server changed to ${servers[newServerIndex]['country']}";
       });
-
-      // Wait for server change message
-      await Future.delayed(const Duration(milliseconds: 1500));
-
-      // Clear toast message
-      if (mounted) {
-        setState(() {
-          _toastMessage = null;
-        });
-      }
+      Fluttertoast.showToast(
+        msg: "Server changed to ${servers[newServerIndex]['country']}",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.grey[800],
+        textColor: Colors.white,
+        fontSize: 15.0,
+      );
     }
   }
 
@@ -782,18 +785,18 @@ class _AnimationPageState extends State<AnimationPage>
       gifSize = isLandscape ? 380.0 : 420.0;
       connectedImageSize = isLandscape ? 320.0 : 360.0;
     } else if (isLargePhone) {
-      animationSize = 280.0;
+      animationSize = 270.0;
       gifSize = 300.0;
-      connectedImageSize = 240.0;
+      connectedImageSize = 220.0;
     } else if (isMediumPhone) {
       animationSize = 220.0;
-      gifSize = 240.0;
-      connectedImageSize = 190.0;
+      gifSize = 245.0;
+      connectedImageSize = 200.0;
     } else {
       // Small phones
-      animationSize = 180.0;
-      gifSize = 200.0;
-      connectedImageSize = 150.0;
+      animationSize = 140.0;
+      gifSize = 160.0;
+      connectedImageSize = 110.0;
     }
 
     return Center(
@@ -937,7 +940,7 @@ class _AnimationPageState extends State<AnimationPage>
     final isMediumPhone = screenWidth >= 360 && screenWidth < 400;
 
     // Responsive sizing based on screen size
-    final titleFontSize = isSmallPhone ? 28.0 : (isMediumPhone ? 32.0 : 40.0);
+    final titleFontSize = isSmallPhone ? 37.0 : (isMediumPhone ? 45.0 : 48.0);
     final appFilterFontSize =
         isSmallPhone ? 11.0 : (isMediumPhone ? 12.0 : 14.0);
     final speedValueFontSize =
@@ -1026,6 +1029,7 @@ class _AnimationPageState extends State<AnimationPage>
                       ),
                       const Spacer(),
                       Container(
+                         margin: EdgeInsets.only(top: isSmallPhone ? 10 : (isMediumPhone ? 15 : 10)),
                         decoration: BoxDecoration(
                           color: appFilterBackgroundColor,
                           borderRadius: BorderRadius.circular(borderRadius),
@@ -1052,9 +1056,9 @@ class _AnimationPageState extends State<AnimationPage>
                             ),
                             padding: EdgeInsets.symmetric(
                               horizontal:
-                                  isSmallPhone ? 12 : (isMediumPhone ? 16 : 20),
-                              vertical:
-                                  isSmallPhone ? 6 : (isMediumPhone ? 7 : 10),
+                                  isSmallPhone ? 12 : (isMediumPhone ? 16 : 30),
+                              vertical: 0,
+                                 // isSmallPhone ? 3 : (isMediumPhone ? 2 : 1),
                             ),
                           ),
                           onPressed: () {
@@ -1304,13 +1308,29 @@ class _AnimationPageState extends State<AnimationPage>
                               ),
                             ],
                           ),
-                          child: Text(
-                            "UPGRADE",
-                            style: TextStyle(
-                              color: const Color(0xFF1A1A2E),
-                              fontWeight: FontWeight.bold,
-                              fontSize: upgradeFontSize,
-                              letterSpacing: 1.1,
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size(0, 0),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const PremiumScreen(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              "UPGRADE",
+                              style: TextStyle(
+                                color: const Color(0xFF1A1A2E),
+                                fontWeight: FontWeight.bold,
+                                fontSize: upgradeFontSize,
+                                letterSpacing: 1.1,
+                              ),
                             ),
                           ),
                         ),
@@ -1432,66 +1452,6 @@ class _AnimationPageState extends State<AnimationPage>
                             onPressed: toggleConnection,
                             color: primaryPurple,
                           ),
-              ),
-            ),
-            // --- Toast overlay - responsive ---
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 350),
-              curve: Curves.easeInOut,
-              height: _toastMessage != null ? context.toastHeight : 0,
-              margin: EdgeInsets.only(
-                bottom: context.isSmallMobile ? 0.5 : 1,
-                left: context.isSmallMobile ? 8 : 0,
-                right: context.isSmallMobile ? 8 : 0,
-              ),
-              child: AnimatedOpacity(
-                opacity: _toastMessage != null ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: _toastMessage != null
-                    ? Center(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: context.isSmallMobile ? 12 : 20,
-                            vertical: context.isSmallMobile ? 4 : 6,
-                          ),
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width *
-                                (context.isSmallMobile ? 0.8 : 0.7),
-                          ),
-                          decoration: BoxDecoration(
-                            color: cardBg.withOpacity(0.95),
-                            borderRadius: BorderRadius.circular(
-                              context.isSmallMobile ? 14 : 18,
-                            ),
-                            border: Border.all(
-                              color: (connected ? connectGreen : primaryPurple)
-                                  .withOpacity(0.3),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color:
-                                    (connected ? connectGreen : primaryPurple)
-                                        .withOpacity(0.2),
-                                blurRadius: context.isSmallMobile ? 6 : 8,
-                                spreadRadius: context.isSmallMobile ? 0.5 : 1,
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            _toastMessage ?? "",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: context.isSmallMobile ? 11 : 13,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: context.isSmallMobile ? 0.8 : 1.05,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      )
-                    : const SizedBox.shrink(),
               ),
             ),
             SizedBox(height: context.isSmallMobile ? 2 : 4),
@@ -2155,7 +2115,7 @@ class MoreScreen extends StatelessWidget {
       ),
       width: double.infinity,
       child: SingleChildScrollView(
-        padding: context.responsivePadding(horizontal: 20, vertical: 30),
+        padding: context.responsivePadding(horizontal: 20, vertical: 35),
         child: Column(
           children: [
             _MoreTile(
