@@ -2,15 +2,6 @@
 
 A new Flutter project.
 
-
-
-
-# AVD images:
-
-
-<img width="361" height="805" alt="image" src="https://github.com/user-attachments/assets/0e9111c0-e028-4298-acd6-b3e760bdb2d4" />
-
-
 ## Getting Started
 
 This project is a starting point for a Flutter application.
