@@ -6,6 +6,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'app_filter_screen.dart';
 import 'premium_screen.dart';
 import 'responsive_utils.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // --- MAIN PAGE ---
 class AnimationPage extends StatefulWidget {
@@ -2168,9 +2170,10 @@ class MoreScreen extends StatelessWidget {
                 color: _AnimationPageState.lightPurple,
                 size: context.responsiveIconSize(20),
               ),
-              onTap: () {
-                // Implement share functionality
-                _showShareDialog(context);
+              onTap: () async {
+                // Share app link using share_plus
+                const appUrl = 'https://play.google.com/store/apps/details?id=com.technosofts.vpnmax';
+                await Share.share('Check out VPN Max for fast and secure browsing! $appUrl');
               },
             ),
             SizedBox(height: context.responsiveSpacing(16)),
@@ -2182,9 +2185,15 @@ class MoreScreen extends StatelessWidget {
                 color: _AnimationPageState.lightPurple,
                 size: context.responsiveIconSize(20),
               ),
-              onTap: () {
-                // Implement rating functionality
-                _showRatingDialog(context);
+              onTap: () async {
+                // Open Play Store app page using url_launcher
+                const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.technosofts.vpnmax';
+                final uri = Uri.parse(playStoreUrl);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } else {
+                  Fluttertoast.showToast(msg: 'Could not open Play Store.');
+                }
               },
             ),
             SizedBox(height: context.responsiveSpacing(16)),
@@ -2196,9 +2205,18 @@ class MoreScreen extends StatelessWidget {
                 color: _AnimationPageState.lightPurple,
                 size: context.responsiveIconSize(20),
               ),
-              onTap: () {
-                // Implement feedback functionality
-                _showFeedbackDialog(context);
+              onTap: () async {
+                // Open mail app with prefilled feedback email
+                final Uri emailLaunchUri = Uri(
+                  scheme: 'mailto',
+                  path: 'vpnapp@technosofts.net',
+                  query: 'subject=VPN Max Feedback&body=Your feedback here',
+                );
+                if (await canLaunchUrl(emailLaunchUri)) {
+                  await launchUrl(emailLaunchUri);
+                } else {
+                  Fluttertoast.showToast(msg: 'No email app found.');
+                }
               },
             ),
             SizedBox(height: context.responsiveSpacing(24)),
@@ -2290,165 +2308,7 @@ class MoreScreen extends StatelessWidget {
     );
   }
 
-  // Helper functions for More Screen actions
-  static void _showShareDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: _AnimationPageState.cardBg,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            context.responsiveBorderRadius(20),
-          ),
-        ),
-        title: Text(
-          "Share VPN Max",
-          style: context.responsiveTextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        content: Text(
-          "Share this amazing VPN app with your friends and family!",
-          style: context.responsiveTextStyle(
-            fontSize: 14,
-            color: Colors.white70,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Close",
-              style: context.responsiveTextStyle(
-                fontSize: 14,
-                color: _AnimationPageState.accentTeal,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static void _showRatingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: _AnimationPageState.cardBg,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            context.responsiveBorderRadius(20),
-          ),
-        ),
-        title: Text(
-          "Rate VPN Max",
-          style: context.responsiveTextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "How would you rate your experience?",
-              style: context.responsiveTextStyle(
-                fontSize: 14,
-                color: Colors.white70,
-              ),
-            ),
-            SizedBox(height: context.responsiveSpacing(16)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                5,
-                (index) => Icon(
-                  Icons.star,
-                  color: _AnimationPageState.warmGold,
-                  size: context.responsiveIconSize(30),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Later",
-              style: context.responsiveTextStyle(
-                fontSize: 14,
-                color: Colors.white54,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _AnimationPageState.accentTeal,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  context.responsiveBorderRadius(10),
-                ),
-              ),
-            ),
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Submit",
-              style: context.responsiveTextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static void _showFeedbackDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: _AnimationPageState.cardBg,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            context.responsiveBorderRadius(20),
-          ),
-        ),
-        title: Text(
-          "Send Feedback",
-          style: context.responsiveTextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        content: Text(
-          "We'd love to hear your feedback! Please share your thoughts and suggestions.",
-          style: context.responsiveTextStyle(
-            fontSize: 14,
-            color: Colors.white70,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Close",
-              style: context.responsiveTextStyle(
-                fontSize: 14,
-                color: _AnimationPageState.accentTeal,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // (Removed dialog stubs; now using real platform actions above)
 
   static void _copyToClipboard(BuildContext context) {
     // In a real app, you would copy the UUID to clipboard
