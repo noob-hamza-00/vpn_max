@@ -88,6 +88,19 @@ class _AnimationPageState extends State<AnimationPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    // Proportional sizes for any device
+    double navHeight = screenHeight * 0.08;
+    double navIconSize = screenWidth * 0.07;
+    double navFontSize = screenWidth * 0.035;
+    double navPaddingH = screenWidth * 0.04;
+    double navPaddingV = screenHeight * 0.01;
+    navHeight = navHeight.clamp(40.0, 80.0);
+    navIconSize = navIconSize.clamp(18.0, 32.0);
+    navFontSize = navFontSize.clamp(10.0, 16.0);
+    navPaddingH = navPaddingH.clamp(8.0, 32.0);
+    navPaddingV = navPaddingV.clamp(4.0, 18.0);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: selectedTab == 0 ? _buildVpnScreen(context) : const MoreScreen(),
@@ -95,7 +108,7 @@ class _AnimationPageState extends State<AnimationPage>
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.vertical(
-              top: Radius.circular(context.responsiveBorderRadius(20))),
+              top: Radius.circular(screenWidth * 0.05)),
           border: Border.all(
             color: (connected ? accentTeal : primaryPurple).withOpacity(0.3),
             width: 1,
@@ -103,32 +116,66 @@ class _AnimationPageState extends State<AnimationPage>
           boxShadow: [
             BoxShadow(
               color: (connected ? accentTeal : primaryPurple).withOpacity(0.2),
-              blurRadius: context.responsiveSpacing(15),
-              spreadRadius: context.responsiveSpacing(3),
+              blurRadius: screenWidth * 0.04,
+              spreadRadius: screenWidth * 0.01,
             ),
           ],
         ),
         child: SafeArea(
           child: Container(
-            height: context.responsiveHeight(60),
+            height: navHeight,
             padding: EdgeInsets.symmetric(
-                horizontal: context.responsiveSpacing(16),
-                vertical: context.responsiveSpacing(8)),
+                horizontal: navPaddingH,
+                vertical: navPaddingV),
             child: Row(
               children: [
-                _BottomNavItem(
-                  icon: Icons.vpn_key,
-                  label: "VPN",
-                  selected: selectedTab == 0,
-                  selectedColor: connected ? accentTeal : primaryPurple,
-                  onTap: () => setState(() => selectedTab = 0),
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                    onTap: () => setState(() => selectedTab = 0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.vpn_key,
+                          color: selectedTab == 0 ? (connected ? accentTeal : primaryPurple) : Colors.white60,
+                          size: navIconSize,
+                        ),
+                        Text(
+                          "VPN",
+                          style: TextStyle(
+                            color: selectedTab == 0 ? (connected ? accentTeal : primaryPurple) : Colors.white60,
+                            fontWeight: selectedTab == 0 ? FontWeight.w700 : FontWeight.w500,
+                            fontSize: navFontSize,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                _BottomNavItem(
-                  icon: Icons.more_horiz,
-                  label: "More",
-                  selected: selectedTab == 1,
-                  selectedColor: connected ? accentTeal : primaryPurple,
-                  onTap: () => setState(() => selectedTab = 1),
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                    onTap: () => setState(() => selectedTab = 1),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.more_horiz,
+                          color: selectedTab == 1 ? (connected ? accentTeal : primaryPurple) : Colors.white60,
+                          size: navIconSize,
+                        ),
+                        Text(
+                          "More",
+                          style: TextStyle(
+                            color: selectedTab == 1 ? (connected ? accentTeal : primaryPurple) : Colors.white60,
+                            fontWeight: selectedTab == 1 ? FontWeight.w700 : FontWeight.w500,
+                            fontSize: navFontSize,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -782,23 +829,23 @@ class _AnimationPageState extends State<AnimationPage>
     late final double gifSize;
     late final double connectedImageSize;
 
-    if (isTablet) {
+   if (isTablet) {
       animationSize = isLandscape ? 350.0 : 400.0;
       gifSize = isLandscape ? 380.0 : 420.0;
       connectedImageSize = isLandscape ? 320.0 : 360.0;
     } else if (isLargePhone) {
-      animationSize = 270.0;
-      gifSize = 300.0;
-      connectedImageSize = 220.0;
-    } else if (isMediumPhone) {
       animationSize = 220.0;
-      gifSize = 245.0;
-      connectedImageSize = 200.0;
+      gifSize = 250.0;
+      connectedImageSize = 180.0;
+    } else if (isMediumPhone) {
+      animationSize = 175.0;
+      gifSize = 220.0;
+      connectedImageSize = 170.0;
     } else {
       // Small phones
-      animationSize = 140.0;
-      gifSize = 160.0;
-      connectedImageSize = 110.0;
+      animationSize = 120.0;
+      gifSize = 140.0;
+      connectedImageSize = 90.0;
     }
 
     return Center(
@@ -834,28 +881,28 @@ class _AnimationPageState extends State<AnimationPage>
                                   BoxShadow(
                                     color: primaryPurple.withOpacity(0.3),
                                     blurRadius: isTablet
-                                        ? 40
+                                        ? 35
                                         : (isMediumPhone
-                                            ? 20
-                                            : (screenWidth < 360 ? 15 : 30)),
+                                            ? 10
+                                            : (screenWidth < 360 ? 10 : 20)),
                                     spreadRadius: isTablet
-                                        ? 15
+                                        ? 10
                                         : (isMediumPhone
-                                            ? 6
-                                            : (screenWidth < 360 ? 4 : 10)),
+                                            ? 4
+                                            : (screenWidth < 360 ? 4 : 8)),
                                   ),
                                   BoxShadow(
                                     color: lightPurple.withOpacity(0.2),
                                     blurRadius: isTablet
-                                        ? 80
+                                        ? 60
                                         : (isMediumPhone
-                                            ? 40
-                                            : (screenWidth < 360 ? 30 : 60)),
+                                            ? 20
+                                            : (screenWidth < 360 ? 20 : 40)),
                                     spreadRadius: isTablet
                                         ? 30
                                         : (isMediumPhone
                                             ? 12
-                                            : (screenWidth < 360 ? 8 : 20)),
+                                            : (screenWidth < 360 ? 8 : 10)),
                                   ),
                                 ],
                               ),
@@ -938,37 +985,49 @@ class _AnimationPageState extends State<AnimationPage>
   Widget _buildVpnScreen(BuildContext context) {
     final currentServer = servers[selectedServer];
     final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallPhone = screenWidth < 360;
-    final isMediumPhone = screenWidth >= 360 && screenWidth < 400;
-
-    // Responsive sizing based on screen size
-    final titleFontSize = isSmallPhone ? 37.0 : (isMediumPhone ? 45.0 : 48.0);
-    final appFilterFontSize =
-        isSmallPhone ? 11.0 : (isMediumPhone ? 12.0 : 14.0);
-    final speedValueFontSize =
-        isSmallPhone ? 18.0 : (isMediumPhone ? 20.0 : 24.0);
-    final speedLabelFontSize =
-        isSmallPhone ? 10.0 : (isMediumPhone ? 11.0 : 13.0);
-    final unitFontSize = isSmallPhone ? 10.0 : (isMediumPhone ? 11.0 : 12.0);
-    final serverNameFontSize =
-        isSmallPhone ? 14.0 : (isMediumPhone ? 15.0 : 17.0);
-    final bannerTitleFontSize =
-        isSmallPhone ? 12.0 : (isMediumPhone ? 13.0 : 15.0);
-    final bannerSubtitleFontSize =
-        isSmallPhone ? 10.0 : (isMediumPhone ? 11.0 : 12.0);
-    final upgradeFontSize = isSmallPhone ? 10.0 : (isMediumPhone ? 11.0 : 12.0);
-
-    final topPadding = isSmallPhone ? 16.0 : (isMediumPhone ? 20.0 : 24.0);
-    final sidePadding = isSmallPhone ? 16.0 : (isMediumPhone ? 20.0 : 24.0);
-    final spacingSmall = isSmallPhone ? 12.0 : (isMediumPhone ? 14.0 : 18.0);
-    final spacingMedium = isSmallPhone ? 10.0 : (isMediumPhone ? 12.0 : 14.0);
-    final bannerHeight = isSmallPhone ? 50.0 : (isMediumPhone ? 56.0 : 64.0);
-    final serverBoxHeight = isSmallPhone ? 50.0 : (isMediumPhone ? 56.0 : 64.0);
-    final iconSize = isSmallPhone ? 28.0 : (isMediumPhone ? 32.0 : 36.0);
-    final smallIconSize = isSmallPhone ? 16.0 : (isMediumPhone ? 18.0 : 20.0);
-    final borderRadius = isSmallPhone ? 12.0 : (isMediumPhone ? 14.0 : 16.0);
-    final largeBorderRadius =
-        isSmallPhone ? 16.0 : (isMediumPhone ? 18.0 : 20.0);
+    final screenHeight = MediaQuery.of(context).size.height;
+    // Proportional sizes for any device
+    double titleFontSize = screenWidth * 0.09; // Reduced from 0.13
+    double appFilterFontSize = screenWidth * 0.032; // Reduced from 0.04
+    double speedValueFontSize = screenWidth * 0.07;
+    double speedLabelFontSize = screenWidth * 0.035;
+    double unitFontSize = screenWidth * 0.032;
+    double serverNameFontSize = screenWidth * 0.045;
+    double bannerTitleFontSize = screenWidth * 0.04;
+    double bannerSubtitleFontSize = screenWidth * 0.032;
+    double upgradeFontSize = screenWidth * 0.032;
+    double topPadding = screenHeight * 0.04;
+    double sidePadding = screenWidth * 0.04;
+    double spacingSmall = screenHeight * 0.018;
+    double spacingMedium = screenHeight * 0.014;
+    double bannerHeight = screenHeight * 0.08;
+    double serverBoxHeight = screenHeight * 0.065; // Reduced from 0.08
+    double iconSize = screenWidth * 0.09;
+    double smallIconSize = screenWidth * 0.05;
+    double borderRadius = screenWidth * 0.04;
+    double largeBorderRadius = screenWidth * 0.05;
+    double connectBtnHeight = screenHeight * 0.065; // Reduced from 0.08
+    // Clamp for extreme small/large screens
+    titleFontSize = titleFontSize.clamp(18.0, 40.0); // Lower max
+    appFilterFontSize = appFilterFontSize.clamp(9.0, 15.0); // Lower max
+    speedValueFontSize = speedValueFontSize.clamp(12.0, 32.0);
+    speedLabelFontSize = speedLabelFontSize.clamp(8.0, 18.0);
+    unitFontSize = unitFontSize.clamp(8.0, 16.0);
+    serverNameFontSize = serverNameFontSize.clamp(10.0, 22.0);
+    bannerTitleFontSize = bannerTitleFontSize.clamp(10.0, 20.0);
+    bannerSubtitleFontSize = bannerSubtitleFontSize.clamp(8.0, 16.0);
+    upgradeFontSize = upgradeFontSize.clamp(8.0, 16.0);
+    topPadding = topPadding.clamp(8.0, 40.0);
+    sidePadding = sidePadding.clamp(8.0, 40.0);
+    spacingSmall = spacingSmall.clamp(4.0, 24.0);
+    spacingMedium = spacingMedium.clamp(4.0, 18.0);
+    bannerHeight = bannerHeight.clamp(32.0, 80.0);
+    serverBoxHeight = serverBoxHeight.clamp(28.0, 60.0); // Lower max
+    iconSize = iconSize.clamp(16.0, 48.0);
+    smallIconSize = smallIconSize.clamp(10.0, 28.0);
+    borderRadius = borderRadius.clamp(6.0, 24.0);
+    largeBorderRadius = largeBorderRadius.clamp(8.0, 32.0);
+    connectBtnHeight = connectBtnHeight.clamp(28.0, 60.0); // Lower max
 
     // Dynamic colors based on connection state
     final speedBlockColor = connected ? accentTeal : primaryPurple;
@@ -1031,7 +1090,7 @@ class _AnimationPageState extends State<AnimationPage>
                       ),
                       const Spacer(),
                       Container(
-                         margin: EdgeInsets.only(top: isSmallPhone ? 10 : (isMediumPhone ? 15 : 10)),
+                        margin: EdgeInsets.only(top: topPadding * 0.25),
                         decoration: BoxDecoration(
                           color: appFilterBackgroundColor,
                           borderRadius: BorderRadius.circular(borderRadius),
@@ -1044,7 +1103,7 @@ class _AnimationPageState extends State<AnimationPage>
                             BoxShadow(
                               color: (connected ? accentTeal : primaryPurple)
                                   .withOpacity(0.2),
-                              blurRadius: 8,
+                              blurRadius: borderRadius,
                               spreadRadius: 1,
                             ),
                           ],
@@ -1057,10 +1116,8 @@ class _AnimationPageState extends State<AnimationPage>
                               borderRadius: BorderRadius.circular(borderRadius),
                             ),
                             padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  isSmallPhone ? 12 : (isMediumPhone ? 16 : 30),
-                              vertical: 0,
-                                 // isSmallPhone ? 3 : (isMediumPhone ? 2 : 1),
+                              horizontal: sidePadding,
+                              vertical: topPadding * 0.05,
                             ),
                           ),
                           onPressed: () {
@@ -1090,8 +1147,7 @@ class _AnimationPageState extends State<AnimationPage>
                       Expanded(
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                              vertical:
-                                  isSmallPhone ? 8 : (isMediumPhone ? 9 : 10)),
+                              vertical: spacingSmall * 0.7),
                           decoration: BoxDecoration(
                             color: blockBackgroundColor,
                             borderRadius: BorderRadius.circular(borderRadius),
@@ -1102,7 +1158,7 @@ class _AnimationPageState extends State<AnimationPage>
                             boxShadow: [
                               BoxShadow(
                                 color: speedBlockColor.withOpacity(0.15),
-                                blurRadius: 12,
+                                blurRadius: borderRadius,
                                 spreadRadius: 2,
                               ),
                             ],
@@ -1118,10 +1174,7 @@ class _AnimationPageState extends State<AnimationPage>
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(
-                                  height: isSmallPhone
-                                      ? 4
-                                      : (isMediumPhone ? 6 : 8)),
+                              SizedBox(height: spacingSmall * 0.33),
                               Text(
                                 "24.5",
                                 style: TextStyle(
@@ -1131,10 +1184,7 @@ class _AnimationPageState extends State<AnimationPage>
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(
-                                  height: isSmallPhone
-                                      ? 2
-                                      : (isMediumPhone ? 3 : 4)),
+                              SizedBox(height: spacingSmall * 0.18),
                               Text(
                                 "mbps",
                                 style: TextStyle(
@@ -1148,13 +1198,11 @@ class _AnimationPageState extends State<AnimationPage>
                           ),
                         ),
                       ),
-                      SizedBox(
-                          width: isSmallPhone ? 12 : (isMediumPhone ? 14 : 16)),
+                      SizedBox(width: sidePadding * 0.75),
                       Expanded(
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                              vertical:
-                                  isSmallPhone ? 8 : (isMediumPhone ? 9 : 10)),
+                              vertical: spacingSmall * 0.7),
                           decoration: BoxDecoration(
                             color: blockBackgroundColor,
                             borderRadius: BorderRadius.circular(borderRadius),
@@ -1165,7 +1213,7 @@ class _AnimationPageState extends State<AnimationPage>
                             boxShadow: [
                               BoxShadow(
                                 color: speedBlockColor.withOpacity(0.15),
-                                blurRadius: 12,
+                                blurRadius: borderRadius,
                                 spreadRadius: 2,
                               ),
                             ],
@@ -1181,10 +1229,7 @@ class _AnimationPageState extends State<AnimationPage>
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(
-                                  height: isSmallPhone
-                                      ? 4
-                                      : (isMediumPhone ? 6 : 8)),
+                              SizedBox(height: spacingSmall * 0.33),
                               Text(
                                 "87.2",
                                 style: TextStyle(
@@ -1194,10 +1239,7 @@ class _AnimationPageState extends State<AnimationPage>
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(
-                                  height: isSmallPhone
-                                      ? 2
-                                      : (isMediumPhone ? 3 : 4)),
+                              SizedBox(height: spacingSmall * 0.18),
                               Text(
                                 "mbps",
                                 style: TextStyle(
@@ -1229,16 +1271,14 @@ class _AnimationPageState extends State<AnimationPage>
                         BoxShadow(
                           color: (connected ? accentTeal : primaryPurple)
                               .withOpacity(0.2),
-                          blurRadius: 12,
+                          blurRadius: borderRadius,
                           spreadRadius: 2,
                         ),
                       ],
                     ),
                     child: Row(
                       children: [
-                        SizedBox(
-                            width:
-                                isSmallPhone ? 12 : (isMediumPhone ? 14 : 16)),
+                        SizedBox(width: sidePadding * 0.75),
                         Container(
                           width: iconSize,
                           height: iconSize,
@@ -1250,7 +1290,7 @@ class _AnimationPageState extends State<AnimationPage>
                             boxShadow: [
                               BoxShadow(
                                 color: warmGold.withOpacity(0.3),
-                                blurRadius: 8,
+                                blurRadius: borderRadius,
                                 spreadRadius: 1,
                               ),
                             ],
@@ -1263,9 +1303,7 @@ class _AnimationPageState extends State<AnimationPage>
                             ),
                           ),
                         ),
-                        SizedBox(
-                            width:
-                                isSmallPhone ? 12 : (isMediumPhone ? 14 : 16)),
+                        SizedBox(width: sidePadding * 0.75),
                         Expanded(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -1292,10 +1330,8 @@ class _AnimationPageState extends State<AnimationPage>
                         ),
                         Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal:
-                                isSmallPhone ? 12 : (isMediumPhone ? 14 : 16),
-                            vertical:
-                                isSmallPhone ? 6 : (isMediumPhone ? 7 : 8),
+                            horizontal: sidePadding,
+                            vertical: spacingSmall * 0.5,
                           ),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
@@ -1305,7 +1341,7 @@ class _AnimationPageState extends State<AnimationPage>
                             boxShadow: [
                               BoxShadow(
                                 color: warmGold.withOpacity(0.3),
-                                blurRadius: 8,
+                                blurRadius: borderRadius,
                                 spreadRadius: 1,
                               ),
                             ],
@@ -1336,9 +1372,7 @@ class _AnimationPageState extends State<AnimationPage>
                             ),
                           ),
                         ),
-                        SizedBox(
-                            width:
-                                isSmallPhone ? 12 : (isMediumPhone ? 14 : 16)),
+                        SizedBox(width: sidePadding * 0.75),
                       ],
                     ),
                   ),
@@ -1346,18 +1380,18 @@ class _AnimationPageState extends State<AnimationPage>
               ),
             ),
             // --- Spacer to push content appropriately for smaller screens ---
-            Spacer(flex: isSmallPhone ? 2 : (isMediumPhone ? 2 : 3)),
+            Spacer(flex: 2),
             // --- Animation Section ---
             Padding(
               padding: EdgeInsets.only(
-                  bottom: isSmallPhone ? 12 : (isMediumPhone ? 17 : 20)),
+                  bottom: spacingMedium * 1.5),
               child: _buildResponsiveAnimationArea(context),
             ),
             // --- Server Box ---
             Padding(
               padding: EdgeInsets.symmetric(
                   horizontal: sidePadding,
-                  vertical: isSmallPhone ? 8 : (isMediumPhone ? 9 : 10)),
+                  vertical: spacingSmall * 0.5),
               child: GestureDetector(
                 onTap: showServerPicker,
                 child: Container(
@@ -1375,15 +1409,14 @@ class _AnimationPageState extends State<AnimationPage>
                       BoxShadow(
                         color: (connected ? accentTeal : primaryPurple)
                             .withOpacity(0.2),
-                        blurRadius: 12,
+                        blurRadius: borderRadius,
                         spreadRadius: 2,
                       ),
                     ],
                   ),
                   child: Row(
                     children: [
-                      SizedBox(
-                          width: isSmallPhone ? 12 : (isMediumPhone ? 14 : 16)),
+                      SizedBox(width: sidePadding * 0.75),
                       Container(
                         width: iconSize,
                         height: iconSize,
@@ -1393,7 +1426,7 @@ class _AnimationPageState extends State<AnimationPage>
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
+                              blurRadius: borderRadius * 0.33,
                               spreadRadius: 1,
                             ),
                           ],
@@ -1405,8 +1438,7 @@ class _AnimationPageState extends State<AnimationPage>
                           ),
                         ),
                       ),
-                      SizedBox(
-                          width: isSmallPhone ? 12 : (isMediumPhone ? 14 : 16)),
+                      SizedBox(width: sidePadding * 0.75),
                       Expanded(
                         child: Text(
                           currentServer['country']!,
@@ -1418,8 +1450,7 @@ class _AnimationPageState extends State<AnimationPage>
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.all(
-                            isSmallPhone ? 6 : (isMediumPhone ? 7 : 8)),
+                        padding: EdgeInsets.all(spacingSmall * 0.5),
                         decoration: BoxDecoration(
                           color: (connected ? accentTeal : primaryPurple)
                               .withOpacity(0.2),
@@ -1428,11 +1459,10 @@ class _AnimationPageState extends State<AnimationPage>
                         child: Icon(
                           Icons.arrow_forward_ios,
                           color: connected ? accentTeal : primaryPurple,
-                          size: isSmallPhone ? 12 : (isMediumPhone ? 14 : 16),
+                          size: smallIconSize * 0.75,
                         ),
                       ),
-                      SizedBox(
-                          width: isSmallPhone ? 12 : (isMediumPhone ? 14 : 16)),
+                      SizedBox(width: sidePadding * 0.75),
                     ],
                   ),
                 ),
@@ -1442,10 +1472,10 @@ class _AnimationPageState extends State<AnimationPage>
             Padding(
               padding: EdgeInsets.symmetric(
                   horizontal: sidePadding,
-                  vertical: isSmallPhone ? 6 : (isMediumPhone ? 7 : 8)),
+                  vertical: spacingSmall * 0.4),
               child: SizedBox(
                 width: double.infinity,
-                height: isSmallPhone ? 48 : (isMediumPhone ? 52 : 56),
+                height: connectBtnHeight,
                 child: connecting
                     ? ConnectingButton(progress: connectingProgress)
                     : connected
@@ -1456,7 +1486,7 @@ class _AnimationPageState extends State<AnimationPage>
                           ),
               ),
             ),
-            SizedBox(height: context.isSmallMobile ? 2 : 4),
+            SizedBox(height: spacingSmall * 0.2),
           ],
         ),
       ],
@@ -2117,7 +2147,8 @@ class MoreScreen extends StatelessWidget {
       ),
       width: double.infinity,
       child: SingleChildScrollView(
-        padding: context.responsivePadding(horizontal: 20, vertical: 35),
+        // Increase top padding to move options lower and avoid status bar clash
+        padding: context.responsivePadding(horizontal: 20, vertical: 60),
         child: Column(
           children: [
             _MoreTile(
@@ -2400,7 +2431,7 @@ class _MoreTile extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
-                    fontSize: context.getResponsiveFontSize(15),
+                    fontSize: (context.getResponsiveFontSize(17)).clamp(16.0, 22.0),
                   ),
                 ),
               ),

@@ -172,7 +172,7 @@ class _PremiumScreenState extends State<PremiumScreen>
             child: Text(
               "Premium Upgrade",
               style: TextStyle(
-                fontSize: context.getResponsiveFontSize(20),
+                fontSize: context.getResponsiveFontSize(25),
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -188,66 +188,54 @@ class _PremiumScreenState extends State<PremiumScreen>
   }
 
   Widget _buildEnhancedHeader(BuildContext context) {
-    final isSmallScreen = context.isTinyScreen || context.isVerySmallMobile;
-    final hasLimitedSpace = context.hasLimitedHeight;
-
-    // Adaptive sizing for different screen constraints
-    final iconSize = isSmallScreen ? 45.0 : (hasLimitedSpace ? 50.0 : 60.0);
-    final titleFontSize =
-        isSmallScreen ? 20.0 : (hasLimitedSpace ? 22.0 : 24.0);
-    final subtitleFontSize =
-        isSmallScreen ? 13.0 : (hasLimitedSpace ? 14.0 : 16.0);
-    final verticalSpacing =
-        isSmallScreen ? 8.0 : (hasLimitedSpace ? 10.0 : 15.0);
-    final headerMargin = isSmallScreen ? 12.0 : (hasLimitedSpace ? 15.0 : 20.0);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final iconSize = (screenWidth * 0.15).clamp(40.0, 80.0);
+    final titleFontSize = (screenWidth * 0.07).clamp(20.0, 32.0);
+    final subtitleFontSize = (screenWidth * 0.045).clamp(14.0, 22.0);
+    final verticalSpacing = (screenHeight * 0.015).clamp(8.0, 24.0);
+    final headerMargin = (screenWidth * 0.05).clamp(10.0, 32.0);
 
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: context.getResponsiveSpacing(headerMargin),
-        vertical: context.getResponsiveSpacing(hasLimitedSpace ? 8 : 15),
+        horizontal: headerMargin,
+        vertical: verticalSpacing,
       ),
       child: Column(
         children: [
-          // Animated Premium Icon - adaptive size
           AnimatedBuilder(
             animation: _pulseController,
             builder: (context, child) {
               return Transform.scale(
                 scale: _pulseAnimation.value,
                 child: Container(
-                  width: context.getResponsiveIconSize(iconSize),
-                  height: context.getResponsiveIconSize(iconSize),
+                  width: iconSize,
+                  height: iconSize,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [warmGold, softGold, accentTeal],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(
-                      context.getResponsiveBorderRadius(
-                        isSmallScreen ? 15.0 : 18.0,
-                      ),
-                    ),
+                    borderRadius: BorderRadius.circular(iconSize * 0.3),
                     boxShadow: [
                       BoxShadow(
                         color: warmGold.withOpacity(0.4),
-                        blurRadius: isSmallScreen ? 8 : 12,
-                        spreadRadius: isSmallScreen ? 1 : 2,
+                        blurRadius: iconSize * 0.18,
+                        spreadRadius: iconSize * 0.03,
                       ),
                     ],
                   ),
                   child: Icon(
                     Icons.diamond,
                     color: darkBg,
-                    size: context.getResponsiveIconSize(iconSize * 0.5),
+                    size: iconSize * 0.5,
                   ),
                 ),
               );
             },
           ),
-          SizedBox(height: context.getResponsiveSpacing(verticalSpacing)),
-
-          // Enhanced Title - adaptive font size
+          SizedBox(height: verticalSpacing),
           ShaderMask(
             shaderCallback: (bounds) => LinearGradient(
               colors: [warmGold, accentTeal, connectGreen],
@@ -255,29 +243,25 @@ class _PremiumScreenState extends State<PremiumScreen>
             child: Text(
               "Unlock VPN Max Pro",
               style: TextStyle(
-                fontSize: context.getResponsiveFontSize(titleFontSize),
+                fontSize: titleFontSize,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          SizedBox(
-            height: context.getResponsiveSpacing(hasLimitedSpace ? 6 : 10),
-          ),
-
-          // Enhanced Subtitle - adaptive and condensed for small screens
+          SizedBox(height: verticalSpacing * 0.7),
           Text(
-            isSmallScreen
+            screenWidth < 400
                 ? "Ultimate privacy and speed"
                 : "Experience ultimate privacy and speed\nwith our premium VPN service",
             style: TextStyle(
-              fontSize: context.getResponsiveFontSize(subtitleFontSize),
+              fontSize: subtitleFontSize,
               color: Colors.white.withOpacity(0.9),
               height: 1.3,
             ),
             textAlign: TextAlign.center,
-            maxLines: isSmallScreen ? 1 : 2,
+            maxLines: screenWidth < 400 ? 1 : 2,
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -286,17 +270,17 @@ class _PremiumScreenState extends State<PremiumScreen>
   }
 
   Widget _buildEnhancedPlansSection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = context.isTinyScreen || context.isVerySmallMobile;
     final hasLimitedSpace = context.hasLimitedHeight;
 
     // Adaptive spacing and sizing
-    final sectionMargin = isSmallScreen ? 12.0 : 20.0;
-    final titleFontSize = isSmallScreen ? 18.0 : 20.0;
-    final subtitleFontSize = isSmallScreen ? 10.0 : 12.0;
-    final verticalSpacing =
-        isSmallScreen ? 12.0 : (hasLimitedSpace ? 15.0 : 20.0);
-    final elementSpacing = isSmallScreen ? 4.0 : 6.0;
-    final planSpacing = isSmallScreen ? 10.0 : 15.0;
+    final sectionMargin = (screenWidth * 0.06).clamp(14.0, 28.0);
+    final titleFontSize = (screenWidth * 0.06).clamp(20.0, 28.0); // Bigger and flexible
+    final subtitleFontSize = (screenWidth * 0.04).clamp(14.0, 20.0); // Bigger and flexible
+    final verticalSpacing = (screenWidth * 0.04).clamp(12.0, 24.0);
+    final elementSpacing = (screenWidth * 0.02).clamp(6.0, 12.0);
+    final planSpacing = (screenWidth * 0.03).clamp(10.0, 18.0);
 
     return Container(
       margin: EdgeInsets.symmetric(
@@ -392,22 +376,22 @@ class _PremiumScreenState extends State<PremiumScreen>
     required bool isPopular,
     bool isLifetime = false,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
     final isSelected = selectedPlan == index;
     final isSmallScreen = context.isTinyScreen || context.isVerySmallMobile;
     final hasLimitedSpace = context.hasLimitedHeight;
 
-    // Adaptive sizing for plan cards
-    final cardPadding = isSmallScreen ? 12.0 : 16.0;
-    final borderRadius = isSmallScreen ? 12.0 : 16.0;
-    final badgeFontSize = isSmallScreen ? 8.0 : 9.0;
-    final titleFontSize = isSmallScreen ? 13.0 : 15.0;
-    final subtitleFontSize = isSmallScreen ? 9.0 : 10.0;
-    final priceFontSize = isSmallScreen ? 14.0 : 16.0;
-    final periodFontSize = isSmallScreen ? 10.0 : 11.0;
-    final buttonHeight = isSmallScreen ? 24.0 : 28.0;
-    final buttonFontSize = isSmallScreen ? 9.0 : 10.0;
-    final elementSpacing =
-        isSmallScreen ? 8.0 : (hasLimitedSpace ? 10.0 : 12.0);
+    // Adaptive sizing for plan cards (bigger and flexible)
+    final cardPadding = (screenWidth * 0.045).clamp(14.0, 24.0);
+    final borderRadius = (screenWidth * 0.04).clamp(12.0, 20.0);
+    final badgeFontSize = (screenWidth * 0.03).clamp(12.0, 16.0);
+    final titleFontSize = (screenWidth * 0.05).clamp(18.0, 26.0);
+    final subtitleFontSize = (screenWidth * 0.035).clamp(14.0, 20.0);
+    final priceFontSize = (screenWidth * 0.055).clamp(20.0, 30.0);
+    final periodFontSize = (screenWidth * 0.035).clamp(14.0, 20.0);
+    final buttonHeight = (screenWidth * 0.09).clamp(32.0, 48.0);
+    final buttonFontSize = (screenWidth * 0.04).clamp(14.0, 20.0);
+    final elementSpacing = (screenWidth * 0.03).clamp(10.0, 18.0);
 
     return GestureDetector(
       onTap: () => setState(() => selectedPlan = index),
@@ -640,24 +624,25 @@ class _PremiumScreenState extends State<PremiumScreen>
   }
 
   Widget _buildEnhancedFeaturesSection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = context.isTinyScreen || context.isVerySmallMobile;
     final hasLimitedSpace = context.hasLimitedHeight;
 
-    // Adaptive sizing
-    final sectionMargin = isSmallScreen ? 12.0 : 16.0;
-    final sectionPadding = isSmallScreen ? 14.0 : 18.0;
-    final borderRadius = isSmallScreen ? 16.0 : 20.0;
-    final headerIconSize = isSmallScreen ? 16.0 : 20.0;
-    final headerIconPadding = isSmallScreen ? 8.0 : 10.0;
-    final headerIconRadius = isSmallScreen ? 10.0 : 12.0;
-    final headerSpacing = isSmallScreen ? 8.0 : 12.0;
-    final titleFontSize = isSmallScreen ? 16.0 : 18.0;
-    final subtitleFontSize = isSmallScreen ? 10.0 : 12.0;
-    final featuresSpacing = isSmallScreen ? 12.0 : 15.0;
-    final featureMargin = isSmallScreen ? 8.0 : 12.0;
-    final featureEmojiSize = isSmallScreen ? 16.0 : 20.0;
-    final featureTitleSize = isSmallScreen ? 12.0 : 14.0;
-    final featureSubtitleSize = isSmallScreen ? 8.0 : 10.0;
+    // Adaptive sizing (bigger and flexible)
+    final sectionMargin = (screenWidth * 0.05).clamp(14.0, 24.0);
+    final sectionPadding = (screenWidth * 0.06).clamp(16.0, 28.0);
+    final borderRadius = (screenWidth * 0.045).clamp(14.0, 22.0);
+    final headerIconSize = (screenWidth * 0.06).clamp(18.0, 28.0);
+    final headerIconPadding = (screenWidth * 0.03).clamp(10.0, 16.0);
+    final headerIconRadius = (screenWidth * 0.03).clamp(10.0, 16.0);
+    final headerSpacing = (screenWidth * 0.03).clamp(10.0, 16.0);
+    final titleFontSize = (screenWidth * 0.055).clamp(20.0, 28.0);
+    final subtitleFontSize = (screenWidth * 0.04).clamp(14.0, 20.0);
+    final featuresSpacing = (screenWidth * 0.04).clamp(14.0, 20.0);
+    final featureMargin = (screenWidth * 0.03).clamp(10.0, 16.0);
+    final featureEmojiSize = (screenWidth * 0.055).clamp(20.0, 28.0);
+    final featureTitleSize = (screenWidth * 0.045).clamp(16.0, 22.0);
+    final featureSubtitleSize = (screenWidth * 0.035).clamp(12.0, 18.0);
 
     final features = [
       {

@@ -52,10 +52,39 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
-    final isSmall = screenWidth < 360;
-    final isMedium = screenWidth >= 360 && screenWidth < 480;
-    final fontSize = isSmall ? 36.0 : (isMedium ? 48.0 : 56.0);
-    final iconSize = isSmall ? 60.0 : (isMedium ? 80.0 : 100.0);
+    final screenHeight = MediaQuery.of(context).size.height;
+    // Proportional sizes for any device
+    double fontSize = screenWidth * 0.10;
+    double iconSize = screenWidth * 0.18;
+    double boxPadding = screenWidth * 0.05;
+    double boxShadowBlur = screenWidth * 0.09;
+    double boxShadowOffset = screenHeight * 0.012;
+    double titleUnderlineWidth = fontSize * 2.5;
+    double titleUnderlineHeight = screenHeight * 0.012;
+    double titleUnderlineBlur = screenWidth * 0.03;
+    double verticalSpacing1 = screenHeight * 0.04;
+    double verticalSpacing2 = screenHeight * 0.02;
+    double textPaddingH = screenWidth * 0.05;
+    double smallTextSize = screenWidth * 0.035;
+    double progressBarHeight = screenHeight * 0.012;
+    double progressBarPaddingH = screenWidth * 0.08;
+    double progressBarBottom = MediaQuery.of(context).padding.bottom + screenHeight * 0.04;
+    // Clamp for extreme small/large screens
+    fontSize = fontSize.clamp(18.0, 56.0);
+    iconSize = iconSize.clamp(28.0, 100.0);
+    boxPadding = boxPadding.clamp(8.0, 32.0);
+    boxShadowBlur = boxShadowBlur.clamp(6.0, 32.0);
+    boxShadowOffset = boxShadowOffset.clamp(2.0, 16.0);
+    titleUnderlineWidth = titleUnderlineWidth.clamp(32.0, 180.0);
+    titleUnderlineHeight = titleUnderlineHeight.clamp(2.0, 12.0);
+    titleUnderlineBlur = titleUnderlineBlur.clamp(2.0, 12.0);
+    verticalSpacing1 = verticalSpacing1.clamp(6.0, 32.0);
+    verticalSpacing2 = verticalSpacing2.clamp(4.0, 18.0);
+    textPaddingH = textPaddingH.clamp(8.0, 32.0);
+    smallTextSize = smallTextSize.clamp(10.0, 18.0);
+    progressBarHeight = progressBarHeight.clamp(3.0, 12.0);
+    progressBarPaddingH = progressBarPaddingH.clamp(10.0, 64.0);
+    progressBarBottom = progressBarBottom.clamp(MediaQuery.of(context).padding.bottom + 8.0, MediaQuery.of(context).padding.bottom + 64.0);
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A2E),
       body: Container(
@@ -82,16 +111,16 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.all(isSmall ? 18 : 24),
+                      padding: EdgeInsets.all(boxPadding),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.07),
                         boxShadow: [
                           BoxShadow(
                             color: theme.colorScheme.secondary.withOpacity(0.18),
-                            blurRadius: 32,
+                            blurRadius: boxShadowBlur,
                             spreadRadius: 2,
-                            offset: const Offset(0, 8),
+                            offset: Offset(0, boxShadowOffset),
                           ),
                         ],
                       ),
@@ -101,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                         size: iconSize,
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: verticalSpacing1),
                     Stack(
                       alignment: Alignment.center,
                       children: [
@@ -118,8 +147,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                   shadows: [
                                     Shadow(
                                       color: Colors.black.withOpacity(0.22),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 2),
+                                      blurRadius: titleUnderlineBlur,
+                                      offset: Offset(0, 2),
                                     ),
                                   ],
                                 ),
@@ -134,8 +163,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                   shadows: [
                                     Shadow(
                                       color: theme.colorScheme.secondary.withOpacity(0.22),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 2),
+                                      blurRadius: titleUnderlineBlur,
+                                      offset: Offset(0, 2),
                                     ),
                                   ],
                                 ),
@@ -144,10 +173,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           ),
                         ),
                         Positioned(
-                          bottom: -8,
+                          bottom: -titleUnderlineHeight,
                           child: Container(
-                            width: fontSize * 3,
-                            height: 7,
+                            width: titleUnderlineWidth,
+                            height: titleUnderlineHeight,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
                               gradient: LinearGradient(
@@ -161,7 +190,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               boxShadow: [
                                 BoxShadow(
                                   color: theme.colorScheme.secondary.withOpacity(0.18),
-                                  blurRadius: 12,
+                                  blurRadius: titleUnderlineBlur,
                                   spreadRadius: 1,
                                 ),
                               ],
@@ -170,15 +199,15 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                         ),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: verticalSpacing2),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: isSmall ? 18 : 28),
+                      padding: EdgeInsets.symmetric(horizontal: textPaddingH),
                       child: Text(
                         'Ultra Responsive VPN for Secure & Fast Browsing',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white70,
-                          fontSize: isSmall ? 13 : (isMedium ? 15 : 18),
+                          fontSize: smallTextSize,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 1.05,
                         ),
@@ -192,16 +221,16 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             Positioned(
               left: 0,
               right: 0,
-              bottom: MediaQuery.of(context).padding.bottom + 32,
+              bottom: progressBarBottom,
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: isSmall ? 32 : 64),
+                padding: EdgeInsets.symmetric(horizontal: progressBarPaddingH),
                 child: AnimatedBuilder(
                   animation: _barAnimation,
                   builder: (context, child) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: LinearProgressIndicator(
-                        minHeight: 8,
+                        minHeight: progressBarHeight,
                         value: _barAnimation.value,
                         backgroundColor: Colors.white.withOpacity(0.08),
                         valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.secondary),

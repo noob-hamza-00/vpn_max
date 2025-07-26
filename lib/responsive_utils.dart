@@ -67,15 +67,15 @@ class ResponsiveUtils {
     // Base scale factor on width
     double widthScale = 1.0;
     if (screenWidth < tinyScreenBreakpoint) {
-      widthScale = 0.75; // Very small screens
+      widthScale = 0.5; // Very small screens
     } else if (screenWidth < smallMobileBreakpoint) {
-      widthScale = 0.80; // Small phones
+      widthScale = 0.6; // Small phones
     } else if (screenWidth < mediumMobileBreakpoint) {
-      widthScale = 0.90; // Medium phones
+      widthScale = 0.7; // Medium phones
     } else if (screenWidth < 480) {
-      widthScale = 0.95; // Regular phones
+      widthScale = 0.8; // Regular phones
     } else if (screenWidth < 768) {
-      widthScale = 1.0; // Large phones
+      widthScale = 0.9; // Large phones
     } else if (screenWidth < 1024) {
       widthScale = 1.1; // Tablets
     } else {
@@ -403,13 +403,13 @@ class ResponsiveUtils {
   // Get responsive button size
   static Size getResponsiveButtonSize(BuildContext context) {
     if (isSmallMobile(context)) {
-      return const Size(120, 40);
+      return const Size(90, 40);
     } else if (isLargeMobile(context)) {
-      return const Size(140, 45);
+      return const Size(110, 45);
     } else if (isTablet(context)) {
-      return const Size(160, 50);
+      return const Size(130, 50);
     } else {
-      return const Size(180, 55);
+      return const Size(150, 55);
     }
   }
 
@@ -447,9 +447,9 @@ class ResponsiveUtils {
       // Large phones/small tablets
       return BoxConstraints(
         minWidth: screenWidth * 0.8,
-        maxWidth: screenWidth * 0.95,
+        maxWidth: screenWidth * 0.6,
         minHeight: 0,
-        maxHeight: screenHeight * 0.9,
+        maxHeight: screenHeight * 0.5,
       );
     } else {
       // Tablets and larger screens
@@ -474,10 +474,10 @@ class ResponsiveUtils {
 
     if (screenWidth < 360) {
       horizontalScale = 0.8;
-      verticalScale = 0.9;
+      verticalScale = 0.4;
     } else if (screenWidth > 768) {
       horizontalScale = 1.2;
-      verticalScale = 1.1;
+      verticalScale = 0.6;
     }
 
     return EdgeInsets.only(
@@ -532,7 +532,7 @@ class ResponsiveUtils {
       // Mobile phones - use most of the screen
       return Size(
         screenWidth * 0.9,
-        (screenHeight * 0.6).clamp(300, screenHeight * 0.8),
+        (screenHeight * 0.3).clamp(300, screenHeight * 0.5),
       );
     } else if (screenWidth < 768) {
       // Large phones/small tablets

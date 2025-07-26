@@ -822,11 +822,11 @@ class _AppFilterScreenState extends State<AppFilterScreen>
               labelColor: Colors.white,
               unselectedLabelColor: lightPurple,
               labelStyle: context.responsiveTextStyle(
-                fontSize: 14,
+                fontSize: (MediaQuery.of(context).size.width * 0.055).clamp(16.0, 22.0), // Bigger and flexible
                 fontWeight: FontWeight.bold,
               ),
               unselectedLabelStyle: context.responsiveTextStyle(
-                fontSize: 13,
+                fontSize: (MediaQuery.of(context).size.width * 0.045).clamp(14.0, 18.0), // Bigger and flexible
                 fontWeight: FontWeight.w500,
               ),
               dividerColor: Colors.transparent,
@@ -886,13 +886,13 @@ class _AppFilterScreenState extends State<AppFilterScreen>
                         controller: searchController,
                         onChanged: _filterApps,
                         style: context.responsiveTextStyle(
-                          fontSize: 15,
+                          fontSize: (MediaQuery.of(context).size.width * 0.05).clamp(16.0, 22.0), // Bigger and flexible
                           color: Colors.white,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Search apps...',
                           hintStyle: context.responsiveTextStyle(
-                            fontSize: 15,
+                            fontSize: (MediaQuery.of(context).size.width * 0.05).clamp(16.0, 22.0), // Bigger and flexible
                             color: Colors.white.withOpacity(0.5),
                           ),
                           prefixIcon: Icon(
