@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:math';
 import 'dart:async';
@@ -8,6 +9,8 @@ import 'premium_screen.dart';
 import 'responsive_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:http/http.dart' as http;
 
 // --- MAIN PAGE ---
 class AnimationPage extends StatefulWidget {
@@ -816,46 +819,23 @@ class _AnimationPageState extends State<AnimationPage>
 
   Widget _buildResponsiveAnimationArea(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth >= 768;
-    final isMediumPhone =
-        screenWidth >= 360 && screenWidth < 400; // Medium phones
-    final isLargePhone =
-        screenWidth >= 400 && screenWidth < 768; // Large phones
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
-    // Adaptive sizing with more granular breakpoints
-    late final double animationSize;
-    late final double gifSize;
-    late final double connectedImageSize;
-
-   if (isTablet) {
-      animationSize = isLandscape ? 350.0 : 400.0;
-      gifSize = isLandscape ? 380.0 : 420.0;
-      connectedImageSize = isLandscape ? 320.0 : 360.0;
-    } else if (isLargePhone) {
-      animationSize = 220.0;
-      gifSize = 250.0;
-      connectedImageSize = 180.0;
-    } else if (isMediumPhone) {
-      animationSize = 175.0;
-      gifSize = 220.0;
-      connectedImageSize = 170.0;
-    } else {
-      // Small phones
-      animationSize = 120.0;
-      gifSize = 140.0;
-      connectedImageSize = 90.0;
-    }
+    final screenHeight = MediaQuery.of(context).size.height;
+    // Fully flexible animation circle and GIF/image sizes
+    double animationSize = (screenWidth * 0.55 + screenHeight * 0.22) / 2;
+    double gifSize = (screenWidth * 0.60 + screenHeight * 0.24) / 2;
+    double connectedImageSize = (screenWidth * 0.45 + screenHeight * 0.18) / 2;
+    // Clamp for extreme small/large screens
+    animationSize = animationSize.clamp(90.0, screenHeight * 0.45);
+    gifSize = gifSize.clamp(100.0, screenHeight * 0.5);
+    connectedImageSize = connectedImageSize.clamp(70.0, screenHeight * 0.4);
 
     return Center(
       child: SizedBox(
-        width: isTablet ? animationSize + 100 : null,
-        height: isTablet ? animationSize + 100 : null,
+        width: animationSize + 40,
+        height: animationSize + 40,
         child: Center(
           child: !connected
-              ? // Disconnected state with purple theme - adaptive for tablets
-              AnimatedBuilder(
+              ? AnimatedBuilder(
                   animation: _controller,
                   builder: (context, child) {
                     final double scale =
@@ -865,13 +845,11 @@ class _AnimationPageState extends State<AnimationPage>
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // Modern radar sweep animation - responsive size
                           RadarLoadingAnimation(
                             controller: _controller,
                             size: animationSize,
                             color: primaryPurple,
                           ),
-                          // The main GIF with scaling and modern shadow - responsive
                           Transform.scale(
                             scale: scale,
                             child: Container(
@@ -880,29 +858,13 @@ class _AnimationPageState extends State<AnimationPage>
                                 boxShadow: [
                                   BoxShadow(
                                     color: primaryPurple.withOpacity(0.3),
-                                    blurRadius: isTablet
-                                        ? 35
-                                        : (isMediumPhone
-                                            ? 10
-                                            : (screenWidth < 360 ? 10 : 20)),
-                                    spreadRadius: isTablet
-                                        ? 10
-                                        : (isMediumPhone
-                                            ? 4
-                                            : (screenWidth < 360 ? 4 : 8)),
+                                    blurRadius: animationSize * 0.13,
+                                    spreadRadius: animationSize * 0.04,
                                   ),
                                   BoxShadow(
                                     color: lightPurple.withOpacity(0.2),
-                                    blurRadius: isTablet
-                                        ? 60
-                                        : (isMediumPhone
-                                            ? 20
-                                            : (screenWidth < 360 ? 20 : 40)),
-                                    spreadRadius: isTablet
-                                        ? 30
-                                        : (isMediumPhone
-                                            ? 12
-                                            : (screenWidth < 360 ? 8 : 10)),
+                                    blurRadius: animationSize * 0.22,
+                                    spreadRadius: animationSize * 0.09,
                                   ),
                                 ],
                               ),
@@ -910,8 +872,7 @@ class _AnimationPageState extends State<AnimationPage>
                                 child: Image.asset(
                                   "assets/images/say_no_vpn.gif",
                                   width: gifSize,
-                                  height:
-                                      gifSize * 0.93, // Maintain aspect ratio
+                                  height: gifSize * 0.93, // Maintain aspect ratio
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -922,8 +883,7 @@ class _AnimationPageState extends State<AnimationPage>
                     );
                   },
                 )
-              : // Connected state with teal theme - adaptive for tablets
-              AnimatedBuilder(
+              : AnimatedBuilder(
                   animation: _controller,
                   builder: (context, child) {
                     return Stack(
@@ -953,22 +913,15 @@ class _AnimationPageState extends State<AnimationPage>
                               boxShadow: [
                                 BoxShadow(
                                   color: accentTeal.withOpacity(0.4),
-                                  blurRadius: isTablet
-                                      ? 35
-                                      : (isMediumPhone
-                                          ? 18
-                                          : (screenWidth < 360 ? 12 : 25)),
-                                  spreadRadius: isTablet
-                                      ? 12
-                                      : (isMediumPhone
-                                          ? 5
-                                          : (screenWidth < 360 ? 3 : 8)),
+                                  blurRadius: animationSize * 0.13,
+                                  spreadRadius: animationSize * 0.04,
                                 ),
                               ],
                             ),
                             child: Image.asset(
                               "assets/images/connect_wifi.png",
                               width: connectedImageSize,
+                              height: connectedImageSize,
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -1147,7 +1100,7 @@ class _AnimationPageState extends State<AnimationPage>
                       Expanded(
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                              vertical: spacingSmall * 0.7),
+                              vertical: spacingSmall * 0.15),
                           decoration: BoxDecoration(
                             color: blockBackgroundColor,
                             borderRadius: BorderRadius.circular(borderRadius),
@@ -1174,7 +1127,7 @@ class _AnimationPageState extends State<AnimationPage>
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(height: spacingSmall * 0.33),
+                              SizedBox(height: spacingSmall * 0.2),
                               Text(
                                 "24.5",
                                 style: TextStyle(
@@ -1184,7 +1137,7 @@ class _AnimationPageState extends State<AnimationPage>
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(height: spacingSmall * 0.18),
+                              SizedBox(height: spacingSmall * 0.1),
                               Text(
                                 "mbps",
                                 style: TextStyle(
@@ -1202,7 +1155,7 @@ class _AnimationPageState extends State<AnimationPage>
                       Expanded(
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                              vertical: spacingSmall * 0.7),
+                              vertical: spacingSmall * 0.15),
                           decoration: BoxDecoration(
                             color: blockBackgroundColor,
                             borderRadius: BorderRadius.circular(borderRadius),
@@ -1229,7 +1182,7 @@ class _AnimationPageState extends State<AnimationPage>
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(height: spacingSmall * 0.33),
+                              SizedBox(height: spacingSmall * 0.2),
                               Text(
                                 "87.2",
                                 style: TextStyle(
@@ -1239,7 +1192,7 @@ class _AnimationPageState extends State<AnimationPage>
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(height: spacingSmall * 0.18),
+                              SizedBox(height: spacingSmall * 0.1),
                               Text(
                                 "mbps",
                                 style: TextStyle(
@@ -2251,6 +2204,86 @@ class MoreScreen extends StatelessWidget {
               },
             ),
             SizedBox(height: context.responsiveSpacing(24)),
+            // --- Check for Updates Tab ---
+            _MoreTile(
+              icon: Icons.system_update,
+              label: "Check for Updates",
+              trailing: Icon(
+                Icons.chevron_right,
+                color: _AnimationPageState.lightPurple,
+                size: context.responsiveIconSize(20),
+              ),
+              onTap: () async {
+                // Real Play Store update check
+                try {
+                  final packageInfo = await PackageInfo.fromPlatform();
+                  final currentVersion = packageInfo.version.trim();
+                  final playStoreUrl = 'https://play.google.com/store/apps/details?id=com.technosofts.vpnmax';
+                  final response = await http.get(Uri.parse(playStoreUrl));
+                  if (response.statusCode == 200) {
+                    final html = response.body;
+                    // Extract version from Play Store HTML
+                    final versionRegExp = RegExp(r'Current Version.*?>([0-9.]+)<', dotAll: true);
+                    final match = versionRegExp.firstMatch(html);
+                    if (match != null) {
+                      final storeVersion = match.group(1)?.trim() ?? '';
+                      if (storeVersion.isNotEmpty && storeVersion != currentVersion) {
+                        Fluttertoast.showToast(
+                          msg: "Update available! ($storeVersion)",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          backgroundColor: Colors.grey[800],
+                          textColor: Colors.white,
+                          fontSize: 15.0,
+                        );
+                        // Optionally, open Play Store
+                        // final uri = Uri.parse(playStoreUrl);
+                        // if (await canLaunchUrl(uri)) {
+                        //   await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        // }
+                      } else {
+                        Fluttertoast.showToast(
+                          msg: "App is up to date!",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          backgroundColor: Colors.grey[800],
+                          textColor: Colors.white,
+                          fontSize: 15.0,
+                        );
+                      }
+                    } else {
+                      Fluttertoast.showToast(
+                        msg: "Could not check version.",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        backgroundColor: Colors.grey[800],
+                        textColor: Colors.white,
+                        fontSize: 15.0,
+                      );
+                    }
+                  } else {
+                    Fluttertoast.showToast(
+                      msg: "Failed to reach Play Store.",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      backgroundColor: Colors.grey[800],
+                      textColor: Colors.white,
+                      fontSize: 15.0,
+                    );
+                  }
+                } catch (e) {
+                  Fluttertoast.showToast(
+                    msg: "Error: ${e.toString()}",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    backgroundColor: Colors.grey[800],
+                    textColor: Colors.white,
+                    fontSize: 15.0,
+                  );
+                }
+              },
+            ),
+            SizedBox(height: context.responsiveSpacing(16)),
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -2297,7 +2330,18 @@ class MoreScreen extends StatelessWidget {
                       ),
                       SizedBox(width: context.responsiveSpacing(12)),
                       GestureDetector(
-                        onTap: () => _copyToClipboard(context),
+                        onTap: () async {
+                          const uuid = "02c8bcf6-d30-4166-b291-410ef39c8abc";
+                          await Clipboard.setData(ClipboardData(text: uuid));
+                          Fluttertoast.showToast(
+                            msg: "UUID copied!",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            backgroundColor: Colors.grey[800],
+                            textColor: Colors.white,
+                            fontSize: 15.0,
+                          );
+                        },
                         child: Container(
                           padding: context.responsivePadding(
                             horizontal: 16,
@@ -2341,24 +2385,7 @@ class MoreScreen extends StatelessWidget {
 
   // (Removed dialog stubs; now using real platform actions above)
 
-  static void _copyToClipboard(BuildContext context) {
-    // In a real app, you would copy the UUID to clipboard
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          "Device UUID copied to clipboard!",
-          style: context.responsiveTextStyle(fontSize: 14, color: Colors.white),
-        ),
-        backgroundColor: _AnimationPageState.accentTeal,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            context.responsiveBorderRadius(10),
-          ),
-        ),
-      ),
-    );
-  }
+  // Removed static _copyToClipboard, now handled inline with Clipboard and Fluttertoast
 }
 
 // --- Enhanced More Tile Widget ---
