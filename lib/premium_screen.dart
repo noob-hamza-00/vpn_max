@@ -172,7 +172,7 @@ class _PremiumScreenState extends State<PremiumScreen>
             child: Text(
               "Premium Upgrade",
               style: TextStyle(
-                fontSize: context.getResponsiveFontSize(25),
+                fontSize: (MediaQuery.of(context).size.width * 0.07).clamp(20.0, 32.0),
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -243,7 +243,7 @@ class _PremiumScreenState extends State<PremiumScreen>
             child: Text(
               "Unlock VPN Max Pro",
               style: TextStyle(
-                fontSize: titleFontSize,
+                fontSize: (MediaQuery.of(context).size.width * 0.07).clamp(20.0, 32.0),
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -256,7 +256,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                 ? "Ultimate privacy and speed"
                 : "Experience ultimate privacy and speed\nwith our premium VPN service",
             style: TextStyle(
-              fontSize: subtitleFontSize,
+              fontSize: (MediaQuery.of(context).size.width * 0.045).clamp(14.0, 22.0),
               color: Colors.white.withOpacity(0.9),
               height: 1.3,
             ),
@@ -293,7 +293,7 @@ class _PremiumScreenState extends State<PremiumScreen>
           Text(
             "Choose Your Plan",
             style: TextStyle(
-              fontSize: context.getResponsiveFontSize(titleFontSize),
+              fontSize: (MediaQuery.of(context).size.width * 0.06).clamp(20.0, 28.0),
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -304,7 +304,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                 ? "Unlock premium features"
                 : "Unlock all premium features with any plan",
             style: TextStyle(
-              fontSize: context.getResponsiveFontSize(subtitleFontSize),
+              fontSize: (MediaQuery.of(context).size.width * 0.04).clamp(14.0, 20.0),
               color: Colors.white60,
             ),
           ),

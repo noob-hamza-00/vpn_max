@@ -4,6 +4,7 @@ import 'package:installed_apps/app_info.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'responsive_utils.dart';
+import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 
 class AppFilterScreen extends StatefulWidget {
   const AppFilterScreen({super.key});
@@ -19,6 +20,8 @@ class _AppFilterScreenState extends State<AppFilterScreen>
   List<AppInfo> systemApps = [];
   List<AppInfo> filteredInstalledApps = [];
   List<AppInfo> filteredSystemApps = [];
+  // Store filter state for each app by package name
+  Map<String, bool> appFilterStates = {};
   bool isLoading = true;
   String errorMessage = '';
   String searchQuery = '';
@@ -151,91 +154,192 @@ class _AppFilterScreenState extends State<AppFilterScreen>
       }
 
       setState(() {
-        // AGGRESSIVE CHROME/GOOGLE/YOUTUBE DETECTION AND FORCING TO SYSTEM APPS
+        // Whitelist for system apps: Google, Chrome, YouTube, and a few real device system apps (excluding phone, messaging, storage)
+        final systemWhitelist = [
+          'com.android.chrome',
+          'com.google.android.youtube',
+          'com.google.android.apps.youtube.music',
+          'com.google.android.apps.youtube.kids',
+          'com.google.android.googlequicksearchbox',
+          'com.google.android.gms',
+          'com.google.android.gsf',
+          'com.android.camera',
+          'com.android.gallery3d',
+          'com.android.contacts',
+          'com.android.calculator',
+          'com.android.clock',
+          'com.android.settings',
+          'com.android.inputmethod.latin',
+          'com.android.launcher',
+          'com.android.launcher3',
+          'com.android.wallpaper',
+          'com.android.music',
+          'com.android.calendar',
+          'com.android.documentsui',
+          'com.android.bluetooth',
+          'com.android.nfc',
+          'com.android.providers.downloads',
+          'com.android.providers.media',
+          'com.android.providers.contacts',
+          'com.android.providers.calendar',
+          'com.android.providers.telephony',
+          'com.android.providers.settings',
+          // Device-specific app stores and core apps
+          'com.android.vending', // Google Play Store
+          'com.samsung.android.app.samsungapps', // Samsung Galaxy Store
+          'com.xiaomi.market', // Xiaomi App Store
+          'com.huawei.appmarket', // Huawei AppGallery
+          'com.oppo.market', // OPPO App Market
+          'com.vivo.appstore', // Vivo App Store
+          'com.miui.securitycenter', // Xiaomi Security
+          'com.samsung.android.sm', // Samsung Device Care
+          'com.huawei.systemmanager', // Huawei Phone Manager
+          'com.oneplus.security', // OnePlus Security
+          'com.oppo.safe', // OPPO Phone Manager
+          'com.vivo.safecenter', // Vivo iManager
+        ];
+
+        // System apps: only Google, Chrome, YouTube, and a few real device system apps (excluding phone, messaging, storage)
+        final systemExclude = [
+          'com.android.phone',
+          'com.android.dialer',
+          'com.android.messaging',
+          'com.android.providers.telephony',
+          'com.android.providers.contacts',
+          'com.android.providers.calendar',
+          'com.android.providers.settings',
+          'com.android.providers.downloads',
+          'com.android.providers.media',
+          'com.android.providers.userdictionary',
+          'com.android.providers.blockednumber',
+          'com.android.providers.applications',
+          'com.android.providers.storage',
+        ];
         systemApps = allApps.where((app) {
           final appNameLower = app.name.toLowerCase();
           final packageNameLower = app.packageName.toLowerCase();
-
-          // PRIORITY 1: FORCE Chrome, Google, and YouTube apps to ALWAYS be system apps
-          if (_isChromeApp(appNameLower, packageNameLower) ||
-              _isGoogleApp(appNameLower, packageNameLower) ||
-              _isYouTubeApp(appNameLower, packageNameLower)) {
-            print(
-                '🎯 PRIORITY FORCED TO SYSTEM: ${app.name} (${app.packageName})');
+          // Google, Chrome, YouTube
+          if (_isChromeApp(appNameLower, packageNameLower)
+              || _isGoogleApp(appNameLower, packageNameLower)
+              || _isYouTubeApp(appNameLower, packageNameLower)) {
             return true;
           }
-
-          // PRIORITY 2: Essential Google services
-          if (_isEssentialGoogleApp(app.packageName, app.name)) {
-            print(
-                '🔧 ESSENTIAL GOOGLE TO SYSTEM: ${app.name} (${app.packageName})');
+          // Always show real device system apps (gallery, calculator, phone, contacts, camera, clock, calendar, music, documentsui, bluetooth, nfc, settings, launcher, wallpaper, inputmethod.latin, device app stores, security, device care, phone manager, storage, etc.)
+          if (systemWhitelist.contains(app.packageName)
+              || packageNameLower == 'com.android.gallery3d'
+              || packageNameLower == 'com.android.calculator'
+              || packageNameLower == 'com.android.phone'
+              || packageNameLower == 'com.android.contacts'
+              || packageNameLower == 'com.android.camera'
+              || packageNameLower == 'com.android.clock'
+              || packageNameLower == 'com.android.calendar'
+              || packageNameLower == 'com.android.music'
+              || packageNameLower == 'com.android.documentsui'
+              || packageNameLower == 'com.android.bluetooth'
+              || packageNameLower == 'com.android.nfc'
+              || packageNameLower == 'com.android.settings'
+              || packageNameLower == 'com.android.launcher'
+              || packageNameLower == 'com.android.launcher3'
+              || packageNameLower == 'com.android.wallpaper'
+              || packageNameLower == 'com.android.inputmethod.latin'
+              || packageNameLower == 'com.android.vending'
+              || packageNameLower == 'com.samsung.android.app.samsungapps'
+              || packageNameLower == 'com.xiaomi.market'
+              || packageNameLower == 'com.huawei.appmarket'
+              || packageNameLower == 'com.oppo.market'
+              || packageNameLower == 'com.vivo.appstore'
+              || packageNameLower == 'com.miui.securitycenter'
+              || packageNameLower == 'com.samsung.android.sm'
+              || packageNameLower == 'com.huawei.systemmanager'
+              || packageNameLower == 'com.oneplus.security'
+              || packageNameLower == 'com.oppo.safe'
+              || packageNameLower == 'com.vivo.safecenter'
+              || packageNameLower == 'com.android.providers.storage'
+              || packageNameLower == 'com.android.providers.calendar'
+              || packageNameLower == 'com.android.providers.contacts'
+              || packageNameLower == 'com.android.providers.media'
+              || packageNameLower == 'com.android.providers.downloads'
+          ) {
+            // Exclude phone, messaging, storage, etc.
+            if (systemExclude.contains(app.packageName)) {
+              return false;
+            }
             return true;
           }
-
-          // PRIORITY 3: Regular system app detection
-          if (_isSystemApp(app.packageName, app.name)) {
-            return true;
-          }
-
           return false;
         }).toList();
 
-        // User apps are everything else EXCEPT Chrome, Google, and YouTube
+        // Installed apps: only user-installed apps (not system apps, not Google/Chrome/YouTube, not support components)
+        // Aggressive exclusion for installed apps: remove all unwanted packages and app names
+        final extraUnwantedPatterns = [
+          'com.sec', 'usb', 'tether', 'resoverlay', 'automation', 'soundquality', 'sound quality', 'sound effects', 'smart fps', 'fps adjuster', 'silent logging', 'safety information', 'roboto', 'rilnotifier', 'perso', 'nsdswebapp', 'meta app installer', 'meta components', 'magtap', 'launcher', 'klms agent', 'imslogger', 'ims settings', 'gestural navigation', 'factory camera', 'easy onehand', 'diagmonagent', 'factory', 'onehand', 'diagmon', 'logger', 'ims', 'settings', 'usb settings', 'overlay', 'effects', 'fps', 'logging', 'safety', 'information', 'notifier', 'installer', 'components', 'tap', 'agent', 'navigation', 'camera', 'meta', 'mag', 'smart', 'silent', 'quality', 'sound', 'storage', 'android', 'samsung', 'system', 'service', 'setup', 'manager', 'security', 'provider', 'framework', 'utility', 'test', 'demo', 'sample', 'miui', 'xiaomi', 'huawei', 'oneplus', 'oppo', 'vivo', 'qualcomm', 'mediatek', 'bixby', 'knox', 'wellbeing', 'health', 'nfc', 'bluetooth', 'print', 'backup', 'restore', 'update', 'store', 'market', 'appstore', 'themes', 'wallpaper', 'audio', 'radio', 'fm', 'scanner', 'compass', 'flashlight', 'recorder', 'voice', 'speech', 'download', 'file', 'emergency', 'sos', 'find', 'locate', 'tracker', 'analytics', 'telemetry', 'diagnostics'
+        ];
         installedApps = allApps.where((app) {
           final appNameLower = app.name.toLowerCase();
           final packageNameLower = app.packageName.toLowerCase();
-
-          // NEVER put Chrome, Google, or YouTube in user apps
-          if (_isChromeApp(appNameLower, packageNameLower) ||
-              _isGoogleApp(appNameLower, packageNameLower) ||
-              _isYouTubeApp(appNameLower, packageNameLower)) {
+          // Exclude Google, Chrome, YouTube, system apps, all real device apps, and device-specific app stores/core apps
+          if (_isChromeApp(appNameLower, packageNameLower)
+              || _isGoogleApp(appNameLower, packageNameLower)
+              || _isYouTubeApp(appNameLower, packageNameLower)
+              || systemWhitelist.contains(app.packageName)
+              || packageNameLower == 'com.android.gallery3d'
+              || packageNameLower == 'com.android.calculator'
+              || packageNameLower == 'com.android.phone'
+              || packageNameLower == 'com.android.contacts'
+              || packageNameLower == 'com.android.camera'
+              || packageNameLower == 'com.android.clock'
+              || packageNameLower == 'com.android.calendar'
+              || packageNameLower == 'com.android.music'
+              || packageNameLower == 'com.android.documentsui'
+              || packageNameLower == 'com.android.bluetooth'
+              || packageNameLower == 'com.android.nfc'
+              || packageNameLower == 'com.android.settings'
+              || packageNameLower == 'com.android.launcher'
+              || packageNameLower == 'com.android.launcher3'
+              || packageNameLower == 'com.android.wallpaper'
+              || packageNameLower == 'com.android.inputmethod.latin'
+              || packageNameLower == 'com.android.vending'
+              || packageNameLower == 'com.samsung.android.app.samsungapps'
+              || packageNameLower == 'com.xiaomi.market'
+              || packageNameLower == 'com.huawei.appmarket'
+              || packageNameLower == 'com.oppo.market'
+              || packageNameLower == 'com.vivo.appstore'
+              || packageNameLower == 'com.miui.securitycenter'
+              || packageNameLower == 'com.samsung.android.sm'
+              || packageNameLower == 'com.huawei.systemmanager'
+              || packageNameLower == 'com.oneplus.security'
+              || packageNameLower == 'com.oppo.safe'
+              || packageNameLower == 'com.vivo.safecenter'
+          ) {
             return false;
           }
-
-          // NEVER put essential Google services in user apps
-          if (_isEssentialGoogleApp(app.packageName, app.name)) {
+          // Exclude all apps with system prefixes (com.android., com.google.android., etc.) unless they are in the Play Store install list
+          final systemPrefixes = [
+            'com.android.', 'com.google.android.', 'com.samsung.android.', 'com.miui.', 'com.xiaomi.', 'com.huawei.', 'com.oneplus.', 'com.oppo.', 'com.vivo.', 'android.', 'org.', 'net.', 'vendor.'
+          ];
+          for (final prefix in systemPrefixes) {
+            if (packageNameLower.startsWith(prefix)) {
+              return false;
+            }
+          }
+          // Exclude apps with package names starting with com.android., com.google.android., com.samsung.android., etc.
+          
+          // Exclude com.google.manline.telemetry and support components specifically
+          if (packageNameLower == 'com.google.manline.telemetry' || appNameLower.contains('support components')) {
             return false;
           }
-
-          // Regular user app criteria
-          return !_isSystemApp(app.packageName, app.name);
+          // Exclude all extra unwanted patterns (package or app name)
+          for (final pattern in extraUnwantedPatterns) {
+            if (packageNameLower.contains(pattern) || appNameLower.contains(pattern)) {
+              return false;
+            }
+          }
+          return true;
         }).toList();
 
         // Sort alphabetically
         systemApps.sort((a, b) => a.name.compareTo(b.name));
         installedApps.sort((a, b) => a.name.compareTo(b.name));
-
-        // VERIFICATION: Log results and confirm Chrome/Google/YouTube are in system apps
-        print('📊 FINAL CATEGORIZATION:');
-        print('  📱 System apps: ${systemApps.length}');
-        print('  � User apps: ${installedApps.length}');
-
-        final chromeInSystem = systemApps
-            .where((app) => _isChromeApp(
-                app.name.toLowerCase(), app.packageName.toLowerCase()))
-            .toList();
-        final googleInSystem = systemApps
-            .where((app) => _isGoogleApp(
-                app.name.toLowerCase(), app.packageName.toLowerCase()))
-            .toList();
-        final youtubeInSystem = systemApps
-            .where((app) => _isYouTubeApp(
-                app.name.toLowerCase(), app.packageName.toLowerCase()))
-            .toList();
-
-        print('✅ Chrome apps in SYSTEM: ${chromeInSystem.length}');
-        for (var app in chromeInSystem) {
-          print('  - ${app.name} (${app.packageName})');
-        }
-        print('✅ Google apps in SYSTEM: ${googleInSystem.length}');
-        for (var app in googleInSystem.take(5)) {
-          // Show first 5
-          print('  - ${app.name} (${app.packageName})');
-        }
-        print('✅ YouTube apps in SYSTEM: ${youtubeInSystem.length}');
-        for (var app in youtubeInSystem) {
-          print('  - ${app.name} (${app.packageName})');
-        }
 
         isLoading = false;
         filteredSystemApps = systemApps;
@@ -251,104 +355,6 @@ class _AppFilterScreenState extends State<AppFilterScreen>
   }
 
   // Force these essential Google apps to always be treated as system apps
-  bool _isEssentialGoogleApp(String packageName, String appName) {
-    // Essential Google apps that should ALWAYS be in system apps - EXPANDED LIST
-    const essentialGoogleApps = [
-      // Chrome variants
-      'com.android.chrome',
-      'com.chrome.beta',
-      'com.chrome.dev',
-      'com.chrome.canary',
-
-      // YouTube variants
-      'com.google.android.youtube',
-      'com.google.android.apps.youtube.music',
-      'com.google.android.apps.youtube.kids',
-
-      // Google app variants
-      'com.google.android.googlequicksearchbox', // Google app
-      'com.google.android.apps.searchlite', // Google Go
-      'com.google.android.apps.gsa', // Google Search Assistant
-
-      // Core Google services
-      'com.google.android.gms', // Google Play Services
-      'com.google.android.gsf', // Google Services Framework
-      'com.google.android.webview', // Android System WebView
-      'com.android.vending', // Google Play Store
-
-      // Other essential Google apps
-      'com.google.android.apps.maps', // Google Maps
-      'com.google.android.gmail', // Gmail
-      'com.google.android.apps.photos', // Google Photos
-      'com.google.android.apps.docs', // Google Drive
-      'com.google.android.calendar', // Google Calendar
-      'com.google.android.contacts', // Google Contacts
-      'com.google.android.inputmethod.latin', // Gboard
-      'com.google.android.dialer', // Google Phone
-      'com.google.android.apps.messaging', // Google Messages
-      'com.google.android.keep', // Google Keep
-      'com.google.android.apps.translate', // Google Translate
-    ];
-
-    // Check exact package name matches for essential apps
-    if (essentialGoogleApps.contains(packageName)) {
-      return true;
-    }
-
-    // Enhanced app name checking for physical device detection
-    final lowerAppName = appName.toLowerCase();
-    final lowerPackageName = packageName.toLowerCase();
-
-    // AGGRESSIVE Chrome detection by name
-    if (lowerAppName.contains('chrome') && !lowerAppName.contains('chromium')) {
-      return true;
-    }
-
-    // AGGRESSIVE Google app detection by name
-    if ((lowerAppName == 'google' ||
-            lowerAppName == 'google app' ||
-            lowerAppName == 'search') ||
-        (lowerAppName.contains('google') && lowerAppName.contains('search'))) {
-      return true;
-    }
-
-    // AGGRESSIVE YouTube detection by name
-    if (lowerAppName.contains('youtube')) {
-      return true;
-    }
-
-    // Enhanced Google service detection
-    if ((lowerAppName.contains('google') &&
-            (lowerAppName.contains('maps') ||
-                lowerAppName.contains('photos') ||
-                lowerAppName.contains('drive') ||
-                lowerAppName.contains('docs') ||
-                lowerAppName.contains('sheets') ||
-                lowerAppName.contains('slides') ||
-                lowerAppName.contains('calendar') ||
-                lowerAppName.contains('contacts') ||
-                lowerAppName.contains('gmail') ||
-                lowerAppName.contains('keep') ||
-                lowerAppName.contains('translate') ||
-                lowerAppName.contains('phone') ||
-                lowerAppName.contains('messages'))) ||
-        lowerAppName.contains('gboard') ||
-        lowerAppName.contains('play store') ||
-        lowerAppName.contains('google play') ||
-        lowerAppName.contains('play services')) {
-      return true;
-    }
-
-    // Package name pattern matching for Google apps from physical device
-    if (lowerPackageName.startsWith('com.google.android.') ||
-        lowerPackageName.startsWith('com.google.') ||
-        lowerPackageName.startsWith('com.android.chrome') ||
-        lowerPackageName.startsWith('com.chrome.')) {
-      return true;
-    }
-
-    return false;
-  }
 
   bool _isSystemApp(String packageName, String appName) {
     // Comprehensive system app package names and patterns
@@ -773,23 +779,14 @@ class _AppFilterScreenState extends State<AppFilterScreen>
         title: Text(
           'App Filter',
           style: context.responsiveTextStyle(
-            fontSize: 20,
+            fontSize: (MediaQuery.of(context).size.width * 0.07).clamp(22.0, 32.0), // Much bigger and flexible
             fontWeight: FontWeight.bold,
             color: Colors.white,
             letterSpacing: 0.5,
           ),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.refresh,
-              color: accentTeal,
-              size: context.responsiveIconSize(24),
-            ),
-            onPressed: _loadApps,
-          ),
-        ],
+        // Removed manual reload button
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(context.responsiveHeight(55)),
           child: Container(
@@ -867,77 +864,99 @@ class _AppFilterScreenState extends State<AppFilterScreen>
           ? _buildLoadingWidget()
           : errorMessage.isNotEmpty
               ? _buildErrorWidget()
-              : Column(
-                  children: [
-                    // Search Bar
-                    Container(
-                      margin: EdgeInsets.all(context.responsiveSpacing(16)),
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        borderRadius: BorderRadius.circular(
-                          context.responsiveBorderRadius(20),
-                        ),
-                        border: Border.all(
-                          color: lightPurple.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: TextField(
-                        controller: searchController,
-                        onChanged: _filterApps,
-                        style: context.responsiveTextStyle(
-                          fontSize: (MediaQuery.of(context).size.width * 0.05).clamp(16.0, 22.0), // Bigger and flexible
-                          color: Colors.white,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Search apps...',
-                          hintStyle: context.responsiveTextStyle(
-                            fontSize: (MediaQuery.of(context).size.width * 0.05).clamp(16.0, 22.0), // Bigger and flexible
-                            color: Colors.white.withOpacity(0.5),
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: accentTeal,
-                            size: context.responsiveIconSize(24),
-                          ),
-                          suffixIcon: searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(
-                                    Icons.clear,
-                                    color: lightPurple,
-                                    size: context.responsiveIconSize(24),
+              : CustomRefreshIndicator(
+                  onRefresh: _loadApps,
+                  builder: (context, child, controller) {
+                    final value = controller.value;
+                    final offsetY = value * 70.0;
+                    // Only slide the app content down, no animation
+                    return Transform.translate(
+                      offset: Offset(0, offsetY),
+                      child: child,
+                    );
+                  },
+                  child: Builder(
+                    builder: (context) {
+                      return CustomScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Column(
+                              children: [
+                                // Search Bar
+                                Container(
+                                  margin: EdgeInsets.all(context.responsiveSpacing(16)),
+                                  decoration: BoxDecoration(
+                                    color: cardBg,
+                                    borderRadius: BorderRadius.circular(
+                                      context.responsiveBorderRadius(20),
+                                    ),
+                                    border: Border.all(
+                                      color: lightPurple.withOpacity(0.3),
+                                      width: 1,
+                                    ),
                                   ),
-                                  onPressed: () {
-                                    searchController.clear();
-                                    _filterApps('');
-                                  },
-                                )
-                              : null,
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: context.responsiveSpacing(16),
-                            vertical: context.responsiveSpacing(14),
+                                  child: TextField(
+                                    controller: searchController,
+                                    onChanged: _filterApps,
+                                    style: context.responsiveTextStyle(
+                                      fontSize: (MediaQuery.of(context).size.width * 0.055).clamp(18.0, 32.0), // Even bigger and more readable
+                                      color: Colors.white,
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: 'Search apps...',
+                                      hintStyle: context.responsiveTextStyle(
+                                        fontSize: (MediaQuery.of(context).size.width * 0.055).clamp(18.0, 32.0), // Even bigger and more readable
+                                        color: Colors.white.withOpacity(0.5),
+                                      ),
+                                      prefixIcon: Icon(
+                                        Icons.search,
+                                        color: accentTeal,
+                                        size: context.responsiveIconSize(24),
+                                      ),
+                                      suffixIcon: searchQuery.isNotEmpty
+                                          ? IconButton(
+                                              icon: Icon(
+                                                Icons.clear,
+                                                color: lightPurple,
+                                                size: context.responsiveIconSize(24),
+                                              ),
+                                              onPressed: () {
+                                                searchController.clear();
+                                                _filterApps('');
+                                              },
+                                            )
+                                          : null,
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: context.responsiveSpacing(16),
+                                        vertical: context.responsiveSpacing(14),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                    // Tab Bar View
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _buildAppList(
-                            filteredInstalledApps,
-                            'No installed apps found',
-                          ),
-                          _buildAppList(
-                            filteredSystemApps,
-                            'No system apps found',
+                          SliverFillRemaining(
+                            child: TabBarView(
+                              controller: _tabController,
+                              children: [
+                                _buildAppList(
+                                  filteredInstalledApps,
+                                  'No installed apps found',
+                                ),
+                                _buildAppList(
+                                  filteredSystemApps,
+                                  'No system apps found',
+                                ),
+                              ],
+                            ),
                           ),
                         ],
-                      ),
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
     );
   }
@@ -1505,7 +1524,7 @@ class _AppFilterScreenState extends State<AppFilterScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (!isUltraTinyScreen) // Hide on ultra-tiny screens to save space
+            if (!isUltraTinyScreen)
               Text(
                 app.packageName,
                 style: TextStyle(
@@ -1530,35 +1549,18 @@ class _AppFilterScreenState extends State<AppFilterScreen>
             ),
           ],
         ),
-        trailing: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: isVerySmallScreen ? 8 : 12,
-            vertical: isVerySmallScreen ? 4 : 6,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                primaryPurple.withOpacity(0.8),
-                accentTeal.withOpacity(0.8),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            'Filter',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: buttonFontSize,
-            ),
-          ),
+        trailing: Switch(
+          value: appFilterStates[app.packageName] ?? false,
+          onChanged: (val) {
+            setState(() {
+              appFilterStates[app.packageName] = val;
+            });
+            // TODO: Add logic to enable/disable VPN filtering for this app
+          },
+          activeColor: accentTeal,
+          inactiveThumbColor: Colors.grey[400],
+          inactiveTrackColor: Colors.grey[700],
         ),
-        onTap: () {
-          // Handle app tap - can implement filtering logic here
-          _showAppDetails(app);
-        },
       ),
     );
   }
@@ -1595,265 +1597,6 @@ class _AppFilterScreenState extends State<AppFilterScreen>
     );
   }
 
-  void _showAppDetails(AppInfo app) {
-    final screenSize = MediaQuery.of(context).size;
-    final screenWidth = screenSize.width;
-    final screenHeight = screenSize.height;
-
-    final isVerySmallScreen = screenWidth < 360;
-    final isSmallScreen = screenWidth < 600;
-    final isMediumScreen = screenWidth >= 600 && screenWidth < 900;
-
-    // Modal height that works for all screens
-    final modalHeight = isVerySmallScreen
-        ? 0.45
-        : isSmallScreen
-            ? 0.4
-            : isMediumScreen
-                ? 0.35
-                : 0.3;
-
-    // App icon size that's always visible
-    final appIconSize = (screenWidth * 0.12).clamp(50.0, 80.0);
-
-    // Text sizes that scale appropriately
-    final titleFontSize = isVerySmallScreen
-        ? 16.0
-        : isSmallScreen
-            ? 18.0
-            : isMediumScreen
-                ? 22.0
-                : 26.0;
-
-    final packageFontSize = isVerySmallScreen
-        ? 11.0
-        : isSmallScreen
-            ? 13.0
-            : isMediumScreen
-                ? 15.0
-                : 17.0;
-
-    final filterIconSize = (screenWidth * 0.08).clamp(30.0, 50.0);
-
-    final filterTitleSize = isVerySmallScreen
-        ? 14.0
-        : isSmallScreen
-            ? 16.0
-            : isMediumScreen
-                ? 18.0
-                : 20.0;
-
-    final filterTextSize = isVerySmallScreen
-        ? 11.0
-        : isSmallScreen
-            ? 13.0
-            : isMediumScreen
-                ? 15.0
-                : 17.0;
-
-    final buttonFontSize = isVerySmallScreen
-        ? 14.0
-        : isSmallScreen
-            ? 16.0
-            : isMediumScreen
-                ? 18.0
-                : 20.0;
-
-    // Responsive padding
-    final containerPadding = (screenWidth * 0.04).clamp(16.0, 28.0);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return Container(
-          height: screenHeight * modalHeight,
-          decoration: BoxDecoration(
-            color: cardBg,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(25),
-              topRight: Radius.circular(25),
-            ),
-            border: Border.all(color: accentTeal.withOpacity(0.3), width: 2),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 10),
-                decoration: BoxDecoration(
-                  color: lightPurple,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(containerPadding),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: appIconSize,
-                            height: appIconSize,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(
-                                color: accentTeal.withOpacity(0.3),
-                                width: 2,
-                              ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
-                              child: _buildAppIcon(app),
-                            ),
-                          ),
-                          SizedBox(width: containerPadding * 0.6),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  app.name,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: titleFontSize,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: containerPadding * 0.2),
-                                Text(
-                                  app.packageName,
-                                  style: TextStyle(
-                                    color: lightPurple,
-                                    fontSize: packageFontSize,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: containerPadding),
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.all(containerPadding * 0.8),
-                        decoration: BoxDecoration(
-                          color: darkBg,
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color: primaryPurple.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.filter_alt,
-                              color: accentTeal,
-                              size: filterIconSize,
-                            ),
-                            SizedBox(height: containerPadding * 0.4),
-                            Text(
-                              'App Filter Options',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: filterTitleSize,
-                              ),
-                            ),
-                            SizedBox(height: containerPadding * 0.3),
-                            Text(
-                              'Configure filtering options for this app',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: filterTextSize,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.redAccent,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                  vertical: isVerySmallScreen ? 12 : 15,
-                                ),
-                                minimumSize: Size(
-                                  0,
-                                  isVerySmallScreen ? 44 : 50,
-                                ),
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                                // Implement block functionality
-                              },
-                              child: Text(
-                                'Block App',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: buttonFontSize,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: containerPadding * 0.6),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: accentTeal,
-                                foregroundColor: darkBg,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                  vertical: isVerySmallScreen ? 12 : 15,
-                                ),
-                                minimumSize: Size(
-                                  0,
-                                  isVerySmallScreen ? 44 : 50,
-                                ),
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                                // Implement allow functionality
-                              },
-                              child: Text(
-                                'Allow App',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: buttonFontSize,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   // AGGRESSIVE Chrome detection - captures all Chrome variants from physical device
   bool _isChromeApp(String appNameLower, String packageNameLower) {

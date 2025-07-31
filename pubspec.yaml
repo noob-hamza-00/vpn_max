@@ -45,6 +45,9 @@ dependencies:
   fluttertoast: ^8.2.4
   auto_size_text: ^3.0.0
   flutter_screenutil: ^5.5.4
+  http: ^1.2.1
+  custom_refresh_indicator: ^2.0.1
+  device_preview: ^1.1.0
 
 dev_dependencies:
   flutter_test:
